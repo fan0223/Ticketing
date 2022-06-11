@@ -1,13 +1,14 @@
 import express, { Request, Response } from 'express'
 import { Ticket } from '../models/ticket'
 import { body } from 'express-validator'
-import { TicketUpdatedPublisher } from '../events/publisher/ticket-updated-publisher'
+import { TicketUpdatedPublisher } from '../events/publishers/ticket-updated-publisher'
 import { natsWrapper } from '../nats-wrapper'
 import {
   validateRequest,
   NotFoundError,
   requireAuth,
-  NotAuthorizedError
+  NotAuthorizedError,
+  BadRequestError
 } from '@fan-tickets/common'
 
 const router = express.Router()
@@ -31,6 +32,10 @@ router.put(
       throw new NotFoundError()
     }
 
+    if (ticket.orderId) {
+      throw new BadRequestError('Cannot edit a reserved ticket')
+    }
+
     if (ticket.userId !== req.currentUser!.id) {
       throw new NotAuthorizedError()
     }
@@ -43,6 +48,7 @@ router.put(
 
     await new TicketUpdatedPublisher(natsWrapper.client).publish({
       id: ticket.id,
+      version: ticket.version,
       title: ticket.title,
       price: ticket.price,
       userId: ticket.userId
