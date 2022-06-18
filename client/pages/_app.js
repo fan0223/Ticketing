@@ -4,9 +4,11 @@ import buildClient from '../api/build-client';
 import Header from '../component/header';
 const AppComponent = ({ Component, pageProps, currentUser }) => {
   return (
-    <div className="container">
+    <div>
       <Header currentUser={currentUser} />
-      <Component {...pageProps} />
+      <div className="container">
+        <Component currentUser={currentUser} {...pageProps} />
+      </div>
     </div>
   );
 };
@@ -20,8 +22,13 @@ AppComponent.getInitialProps = async (appContext) => {
   // but if we want fetch data (getInitialProps) in page Component, can use the approach
   // that take parameter appContext , the page Component getInitialProps put in appContext.Component.getInitialProps
   if (appContext.Component.getInitialProps) {
-    pageProps = await appContext.Component.getInitialProps(appContext.ctx);
+    pageProps = await appContext.Component.getInitialProps(
+      appContext.ctx,
+      client,
+      data
+    );
   }
+
   return {
     pageProps,
     ...data,

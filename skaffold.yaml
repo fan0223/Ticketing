@@ -51,3 +51,11 @@ build:
         manual:
           - src: src/**/*.ts'
             dest: .
+    - image: fan0223/payments
+      context: payments
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: src/**/*.ts'
+            dest: .
