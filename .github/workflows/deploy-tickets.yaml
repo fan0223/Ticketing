@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: cd tickets && docker build -t fan0223/tickets .
       - run: echo $DOCKER_TOKEN | docker login --username $DOCKER_USERNAME --password-stdin
         env:
