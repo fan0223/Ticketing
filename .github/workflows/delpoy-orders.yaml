@@ -1,0 +1,23 @@
+name: deploy-orders
+
+on:
+  push:
+    branches: main
+    paths:
+      - 'orders/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd orders && docker build -t fan0223/orders .
+      - run: echo $DOCKER_TOKEN | docker login --username $DOCKER_USERNAME --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      - run: docker push fan0223/orders
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl kubernetes cluster kubeconfig save 62065f6f-976f-4483-9aa0-cdaf2864ad30
+      - run: kubectl rollout restart deployment orders-depl

@@ -1,0 +1,23 @@
+name: deploy-payments
+
+on:
+  push:
+    branches: main
+    paths:
+      - 'payments/**'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd payments && docker build -t fan0223/payments .
+      - run: echo $DOCKER_TOKEN | docker login --username $DOCKER_USERNAME --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+      - run: docker push fan0223/payments
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl kubernetes cluster kubeconfig save 62065f6f-976f-4483-9aa0-cdaf2864ad30
+      - run: kubectl rollout restart deployment payments-depl
